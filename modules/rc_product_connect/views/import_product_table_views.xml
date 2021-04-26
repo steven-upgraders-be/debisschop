@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="import_product_table_action" model="ir.actions.act_window">
+        <field name="name">Import Product Table</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">import.product.table</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="import_product_table_tree" model="ir.ui.view">
+        <field name="name">import.product.table.tree</field>
+        <field name="model">import.product.table</field>
+        <field name="arch" type="xml">
+            <tree string="Import Product Table">
+                <field name="product_selected_for_import" optional="show"/>
+                <field name="product_is_active" optional="show"/>
+                <field name="idArtikel" optional="hide"/>
+                <field name="artikelnummer" optional="show"/>
+                <field name="typenummer" optional="hide"/>
+                <field name="ean" optional="show"/>
+                <field name="brand_id" optional="show"/>
+                <field name="rrp" optional="show"/>
+                <field name="taksen" optional="show"/>
+                <field name="vkp" optional="show"/>
+                <field name="productTitel" optional="show"/>
+                <field name="productInfo" optional="hide"/>
+                <field name="productBeschrijving" optional="show"/>
+                <field name="idCat_1" optional="hide"/>
+                <field name="idCat_2" optional="hide"/>
+                <field name="idCat_3" optional="hide"/>
+                <field name="cat_1" optional="show"/>
+                <field name="cat_2" optional="show"/>
+                <field name="cat_3" optional="show"/>
+                <field name="URL_afbeelding_1" optional="hide"/>
+                <field name="URL_afbeelding_2" optional="hide"/>
+                <field name="URL_afbeelding_3" optional="hide"/>
+                <field name="URL_afbeelding_4" optional="hide"/>
+                <field name="URL_afbeelding_5" optional="hide"/>
+                <field name="accessoires" optional="hide"/>
+                <field name="status" optional="show"/>
+                <field name="update_trigger" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="import_product_table_form" model="ir.ui.view">
+        <field name="name">import.product.table.form</field>
+        <field name="model">import.product.table</field>
+        <field name="arch" type="xml">
+            <form string="Import Product Table">
+                <sheet>
+                    <group col="4">
+                        <field name="product_selected_for_import"/>
+                        <field name="product_is_active"/>
+                        <field name="idArtikel"/>
+                        <field name="artikelnummer"/>
+                        <field name="typenummer"/>
+                        <field name="ean"/>
+                        <field name="brand_id"/>
+                        <field name="productTitel"/>
+                        <field name="productBeschrijving"/>
+                        <field name="cat_1"/>
+                        <field name="URL_afbeelding_1"/>
+                        <field name="idCat_1"/>
+                        <field name="URL_afbeelding_2"/>
+                        <field name="cat_2"/>
+                        <field name="URL_afbeelding_3"/>
+                        <field name="idCat_2"/>
+                        <field name="URL_afbeelding_4"/>
+                        <field name="cat_3"/>
+                        <field name="URL_afbeelding_5"/>
+                        <field name="idCat_3"/>
+                        <field name="accessoires"/>
+                        <field name="status"/>
+                    </group>
+                    <group col="6">
+                        <field name="rrp"/>
+                        <field name="taksen"/>
+                        <field name="vkp"/>
+                    </group>
+                    <group>
+                        <field name="update_trigger"/>
+                        <field name="productInfo"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="import_product_table_search" model="ir.ui.view">
+        <field name="name">import.product.table.search</field>
+        <field name="model">import.product.table</field>
+        <field name="arch" type="xml">
+            <search string="Import Product Table">
+                <field name="ean"/>
+                <field name="idArtikel"/>
+                <field name="artikelnummer"/>
+                <field name="typenummer"/>
+                <field name="brand_id"/>
+                <field name="productTitel"/>
+                <field name="productBeschrijving"/>
+                <field name="cat_1"/>
+                <field name="URL_afbeelding_1"/>
+                <field name="idCat_1"/>
+                <field name="URL_afbeelding_2"/>
+                <field name="cat_2"/>
+                <field name="URL_afbeelding_3"/>
+                <field name="idCat_2"/>
+                <field name="URL_afbeelding_4"/>
+                <field name="cat_3"/>
+                <field name="URL_afbeelding_5"/>
+                <field name="idCat_3"/>
+                <field name="accessoires"/>
+                <field name="status"/>
+                <filter name="selected_for_import" string="Selected For Import" domain="[('product_selected_for_import', '=', True)]"/>
+                <filter name="active" string="Active" domain="[('product_is_active', '=', True)]"/>
+                <filter name="inactive" string="Archived" domain="[('product_is_active', '=', False)]"/>
+                <group expand="1" string="Group By">
+                    <filter string="Brand" name="brand" context="{'group_by':'brand_id'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <menuitem id="import_product_table_menu"
+              name="Import Product Table"
+              parent="sale.product_menu_catalog"
+              action="import_product_table_action"
+              sequence="3"/>
+
+    <menuitem id="import_product_table_website_menu"
+              name="Import Product Table"
+              parent="website_sale.menu_catalog"
+              action="import_product_table_action"
+              sequence="3"/>
+</odoo>

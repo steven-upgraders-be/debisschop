@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="mass_editing_brand_selected_for_import" model="ir.actions.server">
+        <field name="state">mass_edit</field>
+        <field name="name">Mass Edit (Brand Selected For Import)</field>
+        <field name="model_id" ref="rc_product_connect.model_import_selected_brands_table"/>
+    </record>
+    <record id="mass_editing_brand_selected_for_import_line_1" model="mass.editing.line">
+        <field name="server_action_id" ref="mass_editing_brand_selected_for_import"/>
+        <field name="field_id" ref="rc_product_connect.field_import_selected_brands_table__brand_selected_for_import"/>
+    </record>
+
+    <!-- Add context action -->
+    <function model="ir.actions.server" name="create_action">
+        <value eval="[ref('mass_editing_brand_selected_for_import')]"/>
+    </function>
+</odoo>

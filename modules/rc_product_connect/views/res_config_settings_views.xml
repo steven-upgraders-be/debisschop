@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.rc_product_connect</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="95"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="RC Product Connect" string="RC Product Connect" data-key="rc_product_connect" groups="rc_product_connect.group_rc_manager">
+                    <h2>Source File Locations</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-9 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label class="col-lg-3 o_light_label" string="Products" for="products_url"/>
+                                        <field name="products_url"/>
+                                    </div>
+                                    <div class="row mt16">
+                                        <label class="col-lg-3 o_light_label" string="Categories" for="pims_category_ids"/>
+                                        <field name="pims_category_ids">
+                                            <tree>
+                                                <field name="sequence"/>
+                                                <field name="category_url"/>
+                                            </tree>
+                                            <form>
+                                                <group>
+                                                    <field name="sequence"/>
+                                                    <field name="category_url"/>
+                                                </group>
+                                            </form>
+                                        </field>
+                                    </div>
+                                    <div class="row mt16">
+                                        <label class="col-lg-3 o_light_label" string="Attributes" for="pims_attribute_ids"/>
+                                        <field name="pims_attribute_ids">
+                                            <tree>
+                                                <field name="sequence"/>
+                                                <field name="attribute_url"/>
+                                            </tree>
+                                            <form>
+                                                <group>
+                                                    <field name="sequence"/>
+                                                    <field name="attribute_url"/>
+                                                </group>
+                                            </form>
+                                        </field>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <h2>Mapping</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-9 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label class="col-lg-3 o_light_label" string="Product Name" for="product_name_field_id"/>
+                                        <field name="product_name_field_id"/>
+                                    </div>
+                                    <div class="row mt16">
+                                        <label class="col-lg-3 o_light_label" string="Optional Fields Mapping" for="import_product_mapping_ids"/>
+                                        <field name="import_product_mapping_ids">
+                                            <tree>
+                                                <field name="product_template_field_id"/>
+                                                <field name="import_product_table_field_id"/>
+                                            </tree>
+                                            <form>
+                                                <group>
+                                                    <field name="product_template_field_id"/>
+                                                    <field name="import_product_table_field_id"/>
+                                                </group>
+                                            </form>
+                                        </field>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

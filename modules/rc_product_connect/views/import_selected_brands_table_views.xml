@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="import_selected_brands_table_action" model="ir.actions.act_window">
+        <field name="name">Import Selected Brands Table</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">import.selected.brands.table</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="import_selected_brands_table_tree" model="ir.ui.view">
+        <field name="name">import.selected.brands.table.tree</field>
+        <field name="model">import.selected.brands.table</field>
+        <field name="arch" type="xml">
+            <tree string="Import Selected Brands Table">
+                <field name="name" optional="show"/>
+                <field name="brand_selected_for_import" optional="show"/>
+                <field name="brand_is_active" optional="show"/>
+                <field name="supplier" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="import_selected_brands_table_form" model="ir.ui.view">
+        <field name="name">import.selected.brands.table.form</field>
+        <field name="model">import.selected.brands.table</field>
+        <field name="arch" type="xml">
+            <form string="Import Selected Brands Table">
+                <sheet>
+                    <group col="4">
+                        <field name="brand_selected_for_import"/>
+                        <field name="brand_is_active"/>
+                        <field name="name"/>
+                        <field name="supplier"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="import_selected_brands_table_search" model="ir.ui.view">
+        <field name="name">import.selected.brands.table.search</field>
+        <field name="model">import.selected.brands.table</field>
+        <field name="arch" type="xml">
+            <search string="Import Selected Brands Table">
+                <field name="name"/>
+                <field name="supplier"/>
+                <filter name="selected_for_import" string="Selected For Import" domain="[('brand_selected_for_import', '=', True)]"/>
+                <filter name="active" string="Active" domain="[('brand_is_active', '=', True)]"/>
+                <filter name="inactive" string="Archived" domain="[('brand_is_active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <menuitem id="import_selected_brands_table_menu"
+              name="Import Selected Brands Table"
+              parent="sale.product_menu_catalog"
+              action="import_selected_brands_table_action"
+              sequence="4"/>
+
+    <menuitem id="import_selected_brands_table_website_menu"
+              name="Import Selected Brands Table"
+              parent="website_sale.menu_catalog"
+              action="import_selected_brands_table_action"
+              sequence="4"/>
+</odoo>
