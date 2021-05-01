@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="import_eshop_category_mapping_tree" model="ir.ui.view">
+        <field name="name">import.eshop.category.mapping.tree</field>
+        <field name="model">import.eshop.category.mapping</field>
+        <field name="arch" type="xml">
+            <tree string="Import eCommerce Category Mapping">
+                <field name="name"/>
+                <field name="eshop_category_field_id"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

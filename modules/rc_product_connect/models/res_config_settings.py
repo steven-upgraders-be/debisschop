@@ -27,3 +27,13 @@ class ResConfigSettings(models.TransientModel):
         related="company_id.import_product_mapping_ids",
         readonly=False,
     )
+    import_extra_image_mapping_ids = fields.Many2many(
+        "import.extra.image.mapping",
+        related="company_id.import_extra_image_mapping_ids",
+        readonly=False,
+    )
+    import_eshop_category_mapping_ids = fields.Many2many(
+        "import.eshop.category.mapping",
+        related="company_id.import_eshop_category_mapping_ids",
+        readonly=False,
+    )

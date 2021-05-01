@@ -24,3 +24,7 @@ class ResCompany(models.Model):
         ],
     )
     import_product_mapping_ids = fields.Many2many("import.product.mapping")
+    import_extra_image_mapping_ids = fields.Many2many("import.extra.image.mapping")
+    import_eshop_category_mapping_ids = fields.Many2many(
+        "import.eshop.category.mapping"
+    )

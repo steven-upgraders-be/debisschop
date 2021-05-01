@@ -15,7 +15,7 @@
 
         <record forcecreate="True" id="cron_sync_rc_category_attributes" model="ir.cron">
             <field name="name">Attributes Synchronization (RC Product Connect)</field>
-            <field name="model_id" ref="rc_product_connect.model_product_public_category_attribute"/>
+            <field name="model_id" ref="product.model_product_attribute"/>
             <field name="state">code</field>
             <field name="code">model._sync_rc_category_attributes()</field>
             <field name="user_id" ref="base.user_root"/>
