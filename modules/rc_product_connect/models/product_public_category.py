@@ -14,11 +14,11 @@ class ProductPublicCategory(models.Model):
     _inherit = "product.public.category"
 
     rc_category_code = fields.Char(string="RC Category ID")
-    product_public_category_attribute_ids = fields.Many2many(
-        "product.public.category.attribute",
-        "product_public_category_attributes_rel",
+    attribute_value_ids = fields.Many2many(
+        "product.attribute.value",
+        "product_public_category_product_attribute_value_rel",
         "category_id",
-        "attribute_id",
+        "attribute_value_id",
         string="Attributes",
     )
 

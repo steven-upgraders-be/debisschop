@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_category_pims_tree" model="ir.ui.view">
+        <field name="name">product.category.pims.tree</field>
+        <field name="model">product.category.pims</field>
+        <field name="arch" type="xml">
+            <tree string="Product Category PIMS">
+                <field name="name"/>
+                <field name="sequence"/>
+                <field name="category_url"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

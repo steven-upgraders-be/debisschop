@@ -11,5 +11,6 @@ class ProductCategoryPims(models.Model):
 
     order = "sequence"
 
+    name = fields.Char()
     sequence = fields.Integer("Sequence", default=1, required=True)
     category_url = fields.Char(required=True)

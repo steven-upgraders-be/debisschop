@@ -3,8 +3,10 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 from urllib.request import urlopen
+from urllib.parse import urlparse
 import lxml.etree as ET
 from datetime import datetime
+import psycopg2
 
 from odoo import models, fields, _, api
 
@@ -31,6 +33,14 @@ def try_parsing_date(date_string):
     return False
 
 
+def url_validator(url):
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc, result.path])
+    except:
+        return False
+
+
 class ImportProductTable(models.Model):
     _name = "import.product.table"
     _order = "productBeschrijving, id"
@@ -40,6 +50,8 @@ class ImportProductTable(models.Model):
     typenummer = fields.Char("Type Number")
     ean = fields.Char("EAN", readonly=True)
     brand_id = fields.Many2one("import.selected.brands.table", "Brand")
+    merk = fields.Char()
+    merk_origineel = fields.Char()
     rrp = fields.Float("RRP")
     taksen = fields.Float()
     vkp = fields.Float("Sales Price")
@@ -57,6 +69,8 @@ class ImportProductTable(models.Model):
     URL_afbeelding_3 = fields.Char()
     URL_afbeelding_4 = fields.Char()
     URL_afbeelding_5 = fields.Char()
+    URL_PDF_N = fields.Char()
+    URL_LEV_N = fields.Char()
     accessoires = fields.Char()
     status = fields.Integer()
     update_trigger = fields.Datetime(readonly=True)
@@ -100,7 +114,7 @@ class ImportProductTable(models.Model):
         for product_el in products:
             ean = product_el.find("EAN")
             update_trigger_text = product_el.find("update_trigger").text
-            brand_name = product_el.find("merk").text
+            merk_origineel = product_el.find("merk_origineel").text
 
             if not ean.text:
                 empty_ean_count += 1
@@ -111,6 +125,8 @@ class ImportProductTable(models.Model):
                 "artikelnummer": product_el.find("artikelnummer").text,
                 "typenummer": product_el.find("typenummer").text,
                 "ean": ean.text,
+                "merk": product_el.find("merk").text,
+                "merk_origineel": merk_origineel,
                 "productTitel": product_el.find("productTitel").text,
                 "productInfo": product_el.find("productInfo").text,
                 "productBeschrijving": product_el.find("productBeschrijving").text,
@@ -125,15 +141,17 @@ class ImportProductTable(models.Model):
                 "URL_afbeelding_3": product_el.find("URL_afbeelding_3").text,
                 "URL_afbeelding_4": product_el.find("URL_afbeelding_4").text,
                 "URL_afbeelding_5": product_el.find("URL_afbeelding_5").text,
+                "URL_PDF_N": product_el.find("URL_PDF_N").text,
+                "URL_LEV_N": product_el.find("URL_LEV_N").text,
                 "accessoires": product_el.find("accessoires").text,
                 "status": product_el.find("status").text,
                 "product_is_active": True,
             }
 
-            brand = brand_obj.search([("name", "=", brand_name)])
+            brand = brand_obj.search([("name", "=", merk_origineel)])
             if not brand:
                 brand = brand_obj.create(
-                    {"name": brand_name, "supplier": "Royal Crown"}
+                    {"name": merk_origineel, "supplier": "Royal Crown"}
                 )
             brand.brand_is_active = True
             vals["brand_id"] = brand.id
@@ -247,11 +265,15 @@ class ImportProductTable(models.Model):
         print(res["result"])
         return res
 
-    def process_create_edit_products(self, processed_products):
+    def process_create_edit_products(self, processed_products, errors):
         product_tmpl_obj = self.env["product.template"]
+        product_image_obj = self.env["product.image"]
+        product_public_category_obj = self.env["product.public.category"]
         company = self.env.company
         product_name_field = company.product_name_field_id
         import_product_mappings = company.import_product_mapping_ids
+        import_extra_image_mappings = company.import_extra_image_mapping_ids
+        import_eshop_categories_mappings = company.import_eshop_category_mapping_ids
 
         import_products_to_process = self.search(
             [
@@ -260,35 +282,80 @@ class ImportProductTable(models.Model):
             ]
         )
         for import_product in import_products_to_process:
-            vals = {
-                "name": getattr(import_product, product_name_field.name),
-                "ean": import_product.ean,
-                "rc_last_update_date": import_product.update_trigger,
-            }
-            for mapping in import_product_mappings:
-                vals[mapping.product_template_field_id.name] = getattr(
-                    import_product, mapping.import_product_table_field_id.name
+            ean = import_product.ean
+            try:
+                vals = {
+                    "name": getattr(import_product, product_name_field.name),
+                    "ean": ean,
+                    "rc_last_update_date": import_product.update_trigger,
+                }
+                for mapping in import_product_mappings:
+                    vals[mapping.product_template_field_id.name] = getattr(
+                        import_product, mapping.import_product_table_field_id.name
+                    )
+
+                images = []
+                for image_mapping in import_extra_image_mappings:
+                    image_url = getattr(
+                        import_product, image_mapping.image_url_field_id.name
+                    )
+
+                    if image_url and url_validator(image_url):
+                        extra_image = product_image_obj.create(
+                            {"name": image_url, "image_url": image_url}
+                        )
+                        extra_image._onchange_image_url()
+                        images.append((4, extra_image.id))
+                if images:
+                    vals["product_template_image_ids"] = images
+
+                categories = []
+                for category_mapping in import_eshop_categories_mappings:
+                    category_id = getattr(
+                        import_product, category_mapping.eshop_category_field_id.name
+                    )
+                    if category_id:
+                        category = product_public_category_obj.search(
+                            [("rc_category_code", "=", category_id)],
+                            limit=1,
+                        )
+                        if category and category.exists():
+                            categories.append((4, category.id))
+                if categories:
+                    vals["public_categ_ids"] = categories
+
+                product_template = product_tmpl_obj.search(
+                    [("ean", "=", import_product.ean)], limit=1
                 )
 
-            product_template = product_tmpl_obj.search(
-                [("ean", "=", import_product.ean)], limit=1
-            )
-
-            action_done = False
-            if product_template:
-                if product_template.rc_last_update_date < import_product.update_trigger:
-                    product_template.write(vals)
+                action_done = False
+                if product_template:
+                    if (
+                        product_template.rc_last_update_date
+                        < import_product.update_trigger
+                    ):
+                        product_template.write(vals)
+                        action_done = True
+                else:
+                    product_template = product_tmpl_obj.create(vals)
                     action_done = True
-            else:
-                product_template = product_tmpl_obj.create(vals)
-                action_done = True
-            if action_done:
-                product_template._onchange_image_url()
-                if not product_template.is_published:
-                    product_template.website_publish_button()
+                if action_done:
+                    product_template._onchange_image_url()
+                    if not product_template.is_published:
+                        product_template.website_publish_button()
 
-            processed_products.append(product_template.id)
-        return processed_products
+                processed_products.append(product_template.id)
+                self.env.cr.commit()
+            except psycopg2.DatabaseError as e:
+                self.env.cr.rollback()
+                errors.append(
+                    get_exception_error_string(ean, e, source="product_template")
+                )
+            except Exception as e:
+                errors.append(
+                    get_exception_error_string(ean, e, source="product_template")
+                )
+        return processed_products, errors
 
     def create_edit_products(self):
         company = self.env.company
@@ -310,7 +377,9 @@ class ImportProductTable(models.Model):
             )
 
         try:
-            processed_products = self.process_create_edit_products(processed_products)
+            processed_products, errors = self.process_create_edit_products(
+                processed_products, errors
+            )
         except Exception as e:
             errors.append(get_exception_error_string("", e, source="product_template"))
 

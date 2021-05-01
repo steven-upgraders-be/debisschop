@@ -20,7 +20,9 @@ def get_exception_error_string(number, e, source="category"):
         number=number,
     )
     if source == "product_template":
-        main_string = _("Product import in shop failed:\n")
+        main_string = _("Product import in shop failed, EAN code: {ean}\n").format(
+            ean=number
+        )
     return "".join(
         [
             main_string,

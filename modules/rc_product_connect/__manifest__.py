@@ -6,10 +6,10 @@
     "summary": """
         Scheduled supplier products data import from XML files.
     """,
-    "author": "UAB Honestus",
-    "website": "https://www.honestus.lt",
+    "author": "Upgraders",
+    "website": "https://www.upgraders.be",
     "category": "Specific Industry Applications",
-    "version": "0.1",
+    "version": "0.2",
     "depends": [
         "product",
         "website_sale",
@@ -26,5 +26,10 @@
         "views/res_config_settings_views.xml",
         "views/import_product_table_views.xml",
         "views/import_selected_brands_table_views.xml",
+        "views/import_product_mapping_views.xml",
+        "views/product_category_pims_views.xml",
+        "views/product_category_attribute_pims_views.xml",
+        "views/import_extra_image_mapping_views.xml",
+        "views/import_eshop_category_mapping_views.xml",
     ],
 }

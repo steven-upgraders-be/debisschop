@@ -7,8 +7,11 @@ from . import product_category_attribute_pims
 from . import res_company
 from . import res_config_settings
 from . import product_public_category
-from . import product_public_category_attribute
 from . import import_product_table
 from . import import_selected_brands_table
 from . import import_product_mapping
 from . import product_template
+from . import product_attribute
+from . import product_image
+from . import import_extra_image_mapping
+from . import import_eshop_category_mapping

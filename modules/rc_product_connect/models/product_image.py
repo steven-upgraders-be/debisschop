@@ -8,13 +8,10 @@ import base64
 from odoo import models, fields, api
 
 
-class ProductTemplate(models.Model):
-    _inherit = "product.template"
+class ProductImage(models.Model):
+    _inherit = "product.image"
 
-    ean = fields.Char("EAN", readonly=True)
-    rc_last_update_date = fields.Datetime("RC Last Update Date", readonly=True)
     image_url = fields.Char(string="Image URL")
-    description = fields.Html()
 
     @api.onchange("image_url")
     def _onchange_image_url(self):

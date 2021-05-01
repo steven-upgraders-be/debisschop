@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="import_product_mapping_tree" model="ir.ui.view">
+        <field name="name">import.product.mapping.tree</field>
+        <field name="model">import.product.mapping</field>
+        <field name="arch" type="xml">
+            <tree string="Import Product Mapping">
+                <field name="name"/>
+                <field name="product_template_field_id"/>
+                <field name="import_product_table_field_id"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

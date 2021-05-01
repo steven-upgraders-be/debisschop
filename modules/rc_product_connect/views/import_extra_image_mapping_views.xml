@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="import_extra_image_mapping_tree" model="ir.ui.view">
+        <field name="name">import.extra.image.mapping.tree</field>
+        <field name="model">import.extra.image.mapping</field>
+        <field name="arch" type="xml">
+            <tree string="Import Extra Image Mapping">
+                <field name="name"/>
+                <field name="image_url_field_id"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

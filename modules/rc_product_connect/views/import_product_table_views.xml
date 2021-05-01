@@ -58,6 +58,8 @@
                         <field name="ean"/>
                         <field name="brand_id"/>
                         <field name="productTitel"/>
+                        <field name="merk"/>
+                        <field name="merk_origineel"/>
                         <field name="productBeschrijving"/>
                         <field name="cat_1"/>
                         <field name="URL_afbeelding_1"/>
@@ -70,7 +72,9 @@
                         <field name="cat_3"/>
                         <field name="URL_afbeelding_5"/>
                         <field name="idCat_3"/>
+                        <field name="URL_PDF_N"/>
                         <field name="accessoires"/>
+                        <field name="URL_LEV_N"/>
                         <field name="status"/>
                     </group>
                     <group col="6">
