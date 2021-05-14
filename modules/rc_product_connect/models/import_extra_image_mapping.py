@@ -7,6 +7,7 @@ from odoo import models, fields, api
 
 class ImportExtraImageMapping(models.Model):
     _name = "import.extra.image.mapping"
+    _description = "Import Extra Image Mapping"
     order = "name, id"
 
     name = fields.Char()

@@ -14,16 +14,8 @@ from ..utils import get_errors_string, get_exception_error_string
 class ProductAttribute(models.Model):
     _inherit = "product.attribute"
 
-    rc_attribute_code = fields.Char("RC Attribute Code")
-
     def _sync_rc_category_attributes(self):
         self.sync_category_attributes()
-        # celery = {"countdown": 2}
-        # self.env["celery.task"].call_task(
-        #     "product.attribute",
-        #     "sync_category_attributes",
-        #     celery=celery,
-        # )
 
     def create_edit_attributes(
         self,
@@ -41,13 +33,14 @@ class ProductAttribute(models.Model):
 
         for attribute_el in attributes:
             rc_attribute_value_id = attribute_el.find("id")
-            rc_attribute_code = attribute_el.find("attribute_code").text
-            rc_category_level3_id = attribute_el.find("idCat3")
+            rc_category_level3_id = attribute_el.find("parent")
             nl_name = attribute_el.find("attribuut_N").text
             fr_name = attribute_el.find("attribuut_F").text
+            nl_attribute_name = attribute_el.find("label_N").text
+            fr_attribute_name = attribute_el.find("label_F").text
             sequence = attribute_el.find("sort").text
 
-            if not rc_attribute_value_id.text or not rc_attribute_code:
+            if not rc_attribute_value_id.text:
                 empty_attribute_id_count += 1
                 continue
 
@@ -63,19 +56,35 @@ class ProductAttribute(models.Model):
                 )
                 continue
 
+            if not nl_attribute_name and not fr_attribute_name:
+                errors.append(
+                    get_exception_error_string(
+                        number,
+                        _("Label is not set for attribute with ID: {}").format(
+                            rc_attribute_value_id.text
+                        ),
+                        source="attribute",
+                    )
+                )
+                continue
+
             attribute_vals = {
-                "name": rc_attribute_code,
-                "rc_attribute_code": rc_attribute_code,
+                "name": nl_attribute_name or fr_attribute_name,
                 "create_variant": "no_variant",
             }
 
             attribute = self.search(
-                [("rc_attribute_code", "=", rc_attribute_code)], limit=1
+                [("name", "=", nl_attribute_name or fr_attribute_name)], limit=1
             )
             if attribute:
                 attribute.write(attribute_vals)
             else:
                 attribute = self.create(attribute_vals)
+
+            if "nl_BE" in active_langs and nl_attribute_name:
+                attribute.with_context(lang="nl_BE").name = nl_attribute_name
+            if "fr_BE" in active_langs and fr_attribute_name:
+                attribute.with_context(lang="fr_BE").name = fr_attribute_name
 
             attribute_value_vals = {
                 "name": nl_name or fr_name,
@@ -107,6 +116,17 @@ class ProductAttribute(models.Model):
                 self.env.cr.commit()
             except psycopg2.DatabaseError as e:
                 self.env.cr.rollback()
+                pgerror = getattr(e, "pgerror")
+                if pgerror and "duplicate key" in pgerror:
+                    e = _(
+                        "Duplicate contstraint violation! Attribute value with name: "
+                        "'{value_name}' already exists for "
+                        "attribute (label): '{attribute_name}'. Each attribute should "
+                        "have attribute values with unique names."
+                    ).format(
+                        value_name=attribute_value_vals["name"],
+                        attribute_name=attribute_vals["name"],
+                    )
                 errors.append(get_exception_error_string(number, e, source="attribute"))
             except Exception as e:
                 errors.append(get_exception_error_string(number, e, source="attribute"))
@@ -121,7 +141,7 @@ class ProductAttribute(models.Model):
             errors.append(
                 get_exception_error_string(
                     number,
-                    _("Found {} attributes with empty ID or attribute code.").format(
+                    _("Found {} attribute velues with empty ID.").format(
                         empty_attribute_id_count,
                     ),
                     source="attribute",
@@ -155,26 +175,22 @@ class ProductAttribute(models.Model):
                     processed_attribute_values,
                 )
 
-        res = {
-            "result": _(
-                "Category level 3 attributes successfully imported/edited in Odoo."
-            ),
-            "res_model": "product.attribute",
-        }
+        result = _("Category level 3 attributes successfully imported/edited in Odoo.")
         if not processed_attribute_values:
-            res["result"] = _(
+            result = _(
                 "Category level 3 attributes were not imported/edited. "
                 "Please check source file location settings."
             )
         if errors:
-            res["result"] = _(
+            result = _(
                 "Some category level 3 attributes successfully imported/edited "
                 "in Odoo.\n"
                 "Some have failed:\n{error}"
             ).format(
                 error=get_errors_string(errors),
             )
-        return res
+        self.env["mail.channel"].post_system_message(result)
+        return True
 
 
 class ProductAttributeValue(models.Model):

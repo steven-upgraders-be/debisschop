@@ -28,9 +28,6 @@
                 <field name="idCat_1" optional="hide"/>
                 <field name="idCat_2" optional="hide"/>
                 <field name="idCat_3" optional="hide"/>
-                <field name="cat_1" optional="show"/>
-                <field name="cat_2" optional="show"/>
-                <field name="cat_3" optional="show"/>
                 <field name="URL_afbeelding_1" optional="hide"/>
                 <field name="URL_afbeelding_2" optional="hide"/>
                 <field name="URL_afbeelding_3" optional="hide"/>
@@ -61,20 +58,17 @@
                         <field name="merk"/>
                         <field name="merk_origineel"/>
                         <field name="productBeschrijving"/>
-                        <field name="cat_1"/>
                         <field name="URL_afbeelding_1"/>
                         <field name="idCat_1"/>
                         <field name="URL_afbeelding_2"/>
-                        <field name="cat_2"/>
-                        <field name="URL_afbeelding_3"/>
                         <field name="idCat_2"/>
-                        <field name="URL_afbeelding_4"/>
-                        <field name="cat_3"/>
-                        <field name="URL_afbeelding_5"/>
+                        <field name="URL_afbeelding_3"/>
                         <field name="idCat_3"/>
-                        <field name="URL_PDF_N"/>
+                        <field name="URL_afbeelding_4"/>
+                        <field name="URL_PDF"/>
+                        <field name="URL_afbeelding_5"/>
+                        <field name="URL_LEV"/>
                         <field name="accessoires"/>
-                        <field name="URL_LEV_N"/>
                         <field name="status"/>
                     </group>
                     <group col="6">
@@ -103,15 +97,12 @@
                 <field name="brand_id"/>
                 <field name="productTitel"/>
                 <field name="productBeschrijving"/>
-                <field name="cat_1"/>
                 <field name="URL_afbeelding_1"/>
                 <field name="idCat_1"/>
                 <field name="URL_afbeelding_2"/>
-                <field name="cat_2"/>
                 <field name="URL_afbeelding_3"/>
                 <field name="idCat_2"/>
                 <field name="URL_afbeelding_4"/>
-                <field name="cat_3"/>
                 <field name="URL_afbeelding_5"/>
                 <field name="idCat_3"/>
                 <field name="accessoires"/>

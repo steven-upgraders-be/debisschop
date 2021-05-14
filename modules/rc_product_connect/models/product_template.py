@@ -6,6 +6,7 @@ import requests
 import base64
 
 from odoo import models, fields, api
+from odoo.tools.translate import html_translate
 
 
 class ProductTemplate(models.Model):
@@ -14,7 +15,7 @@ class ProductTemplate(models.Model):
     ean = fields.Char("EAN", readonly=True)
     rc_last_update_date = fields.Datetime("RC Last Update Date", readonly=True)
     image_url = fields.Char(string="Image URL")
-    description = fields.Html()
+    description = fields.Html(translate=html_translate)
 
     @api.onchange("image_url")
     def _onchange_image_url(self):

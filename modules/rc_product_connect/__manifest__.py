@@ -9,15 +9,16 @@
     "author": "Upgraders",
     "website": "https://www.upgraders.be",
     "category": "Specific Industry Applications",
-    "version": "0.2",
+    "version": "0.3",
     "depends": [
         "product",
         "website_sale",
-        # "celery",
         "mass_editing",
+        "stock",
     ],
     "data": [
         "data/mass_editing_data.xml",
+        "data/mail_channel_data.xml",
         "data/cron_data.xml",
         "data/ir_module_category_data.xml",
         "security/rc_product_connect_security.xml",

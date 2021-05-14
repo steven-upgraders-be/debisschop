@@ -15,3 +15,4 @@ from . import product_attribute
 from . import product_image
 from . import import_extra_image_mapping
 from . import import_eshop_category_mapping
+from . import mail_channel

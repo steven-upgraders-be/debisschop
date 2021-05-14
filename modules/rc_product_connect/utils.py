@@ -14,8 +14,8 @@ def get_exception_error_string(number, e, source="category"):
     if source == "attribute":
         case = _("attribute file number:")
     if source == "product":
-        case = _("products")
-    main_string = _("Error in syncing of {case} {number}\n").format(
+        case = _("products:")
+    main_string = _("Error in syncing of {case} {number}:\n").format(
         case=case,
         number=number,
     )

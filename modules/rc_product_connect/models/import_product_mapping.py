@@ -11,6 +11,7 @@ text_field_types = ["char", "html", "text"]
 
 class ImportProductMapping(models.Model):
     _name = "import.product.mapping"
+    _description = "Import Product Mapping"
     order = "name, id"
 
     name = fields.Char()

@@ -24,13 +24,6 @@ class ProductPublicCategory(models.Model):
 
     def _sync_rc_product_categories(self):
         self.sync_categories()
-        # celery = {"countdown": 2}
-        # self.env["celery.task"].call_task(
-        #     "product.public.category",
-        #     "sync_categories",
-        #     celery=celery,
-        #     transaction_strategy="immediate",
-        # )
 
     def create_edit_categories(self, categories, level, errors, processed_categories):
         active_langs = (
@@ -38,11 +31,10 @@ class ProductPublicCategory(models.Model):
         )
 
         for category_el in categories:
-            rc_category_id = category_el.find("idCat_{}".format(level))
+            rc_category_id = category_el.find("id")
             nl_name = category_el.find("categorie_N").text
             fr_name = category_el.find("categorie_F").text
-            parent_level = str(int(level) - 1)
-            rc_parent_category_id = category_el.find("idCat_{}".format(parent_level))
+            rc_parent_category_id = category_el.find("parent")
 
             if not nl_name and not fr_name:
                 errors.append(
@@ -56,7 +48,7 @@ class ProductPublicCategory(models.Model):
                 continue
 
             vals = {"name": nl_name or fr_name, "rc_category_code": rc_category_id.text}
-            if int(level) != 1 and rc_parent_category_id.text:
+            if rc_parent_category_id.text:
                 parent_id = self.search(
                     [
                         (
@@ -112,20 +104,18 @@ class ProductPublicCategory(models.Model):
                 categories, level, errors, processed_categories
             )
 
-        res = {
-            "result": _("Categories successfully imported/edited in Odoo."),
-            "res_model": "product.public.category",
-        }
+        result = _("Categories successfully imported/edited in Odoo.")
         if not processed_categories:
-            res["result"] = _(
+            result = _(
                 "Categories were not imported/edited. "
                 "Please check source file location settings."
             )
         if errors:
-            res["result"] = _(
+            result = _(
                 "Some categories successfully imported/edited in Odoo.\n"
                 "Some have failed:\n{error}"
             ).format(
                 error=get_errors_string(errors),
             )
-        return res
+        self.env["mail.channel"].post_system_message(result)
+        return True

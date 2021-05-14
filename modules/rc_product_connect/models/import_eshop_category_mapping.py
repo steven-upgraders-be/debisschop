@@ -7,6 +7,7 @@ from odoo import models, fields, api
 
 class ImportEshopCategoryMapping(models.Model):
     _name = "import.eshop.category.mapping"
+    _description = "Import e-Shop Category Mapping"
     order = "name, id"
 
     name = fields.Char()

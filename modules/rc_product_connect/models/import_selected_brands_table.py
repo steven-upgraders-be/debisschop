@@ -7,6 +7,7 @@ from odoo import models, fields
 
 class ImportSelectedBrandsTable(models.Model):
     _name = "import.selected.brands.table"
+    _description = "Import Selected Brands Table"
     _order = "name, id"
 
     name = fields.Char()

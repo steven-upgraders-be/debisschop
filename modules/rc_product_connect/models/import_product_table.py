@@ -9,8 +9,18 @@ from datetime import datetime
 import psycopg2
 
 from odoo import models, fields, _, api
+from odoo.tools.translate import html_translate
 
 from ..utils import get_errors_string, get_exception_error_string, isfloat
+
+
+FIELDS_TO_TRANSLATE = [
+    "productTitel",
+    "productInfo",
+    "productBeschrijving",
+    "URL_PDF",
+    "URL_LEV",
+]
 
 
 def invalid_float_error(field, ean):
@@ -43,57 +53,58 @@ def url_validator(url):
 
 class ImportProductTable(models.Model):
     _name = "import.product.table"
+    _description = "Import Product Table"
     _order = "productBeschrijving, id"
 
-    idArtikel = fields.Char("Article ID RC")
+    idArtikel = fields.Char("idArtikel")
     artikelnummer = fields.Char()
-    typenummer = fields.Char("Type Number")
+    typenummer = fields.Char()
     ean = fields.Char("EAN", readonly=True)
     brand_id = fields.Many2one("import.selected.brands.table", "Brand")
     merk = fields.Char()
     merk_origineel = fields.Char()
     rrp = fields.Float("RRP")
     taksen = fields.Float()
-    vkp = fields.Float("Sales Price")
-    productTitel = fields.Char()
-    productInfo = fields.Html("Product Description")
-    productBeschrijving = fields.Char("Product Name")
+    vkp = fields.Float("VKP")
+    productTitel = fields.Char(translate=True)
+    productInfo = fields.Html(translate=html_translate)
+    productBeschrijving = fields.Char(translate=True)
     idCat_1 = fields.Integer("Product Category Level 1 ID")
     idCat_2 = fields.Integer("Product Category Level 2 ID")
     idCat_3 = fields.Integer("Product Category Level 3 ID")
-    cat_1 = fields.Char("Product Category Level 1")
-    cat_2 = fields.Char("Product Category Level 2")
-    cat_3 = fields.Char("Product Category Level 3")
     URL_afbeelding_1 = fields.Char()
     URL_afbeelding_2 = fields.Char()
     URL_afbeelding_3 = fields.Char()
     URL_afbeelding_4 = fields.Char()
     URL_afbeelding_5 = fields.Char()
-    URL_PDF_N = fields.Char()
-    URL_LEV_N = fields.Char()
+    URL_PDF = fields.Char(translate=True)
+    URL_LEV = fields.Char(translate=True)
     accessoires = fields.Char()
     status = fields.Integer()
     update_trigger = fields.Datetime(readonly=True)
     product_selected_for_import = fields.Boolean()
     product_is_active = fields.Boolean()
+    idAtt_01 = fields.Integer()
+    idAtt_02 = fields.Integer()
+    idAtt_03 = fields.Integer()
+    idAtt_04 = fields.Integer()
+    idAtt_05 = fields.Integer()
+    idAtt_06 = fields.Integer()
+    idAtt_07 = fields.Integer()
+    idAtt_08 = fields.Integer()
+    idAtt_09 = fields.Integer()
+    idAtt_10 = fields.Integer()
+    idAtt_11 = fields.Integer()
+    idAtt_12 = fields.Integer()
+    idAtt_13 = fields.Integer()
+    idAtt_14 = fields.Integer()
+    idAtt_15 = fields.Integer()
 
     def _sync_rc_import_product_table(self):
         self.sync_rc_import_product_table()
-        # celery = {"countdown": 2}
-        # self.env["celery.task"].call_task(
-        #     "import.product.table",
-        #     "sync_rc_import_product_table",
-        #     celery=celery,
-        # )
 
     def _create_edit_products(self):
         self.create_edit_products()
-        # celery = {"countdown": 2}
-        # self.env["celery.task"].call_task(
-        #     "import.product.table",
-        #     "create_edit_products",
-        #     celery=celery,
-        # )
 
     def create_edit_import_products(
         self,
@@ -101,6 +112,11 @@ class ImportProductTable(models.Model):
         errors,
         processed_products,
     ):
+        active_langs = (
+            self.env["res.lang"].search([("active", "=", True)]).mapped("code")
+        )
+        translation_obj = self.env["ir.translation"]
+
         brand_obj = self.env["import.selected.brands.table"]
 
         existing_products = self.search([("product_is_active", "=", True)])
@@ -112,39 +128,72 @@ class ImportProductTable(models.Model):
         empty_ean_count = 0
 
         for product_el in products:
-            ean = product_el.find("EAN")
-            update_trigger_text = product_el.find("update_trigger").text
-            merk_origineel = product_el.find("merk_origineel").text
+            default_el = product_el.find("default")
+            nl_el = product_el.find("nl")
+            fr_el = product_el.find("fr")
+            nl_productTitel = (
+                nl_productInfo
+            ) = nl_productBeschrijving = nl_URL_PDF = nl_URL_LEV = ""
+            fr_productTitel = (
+                fr_productInfo
+            ) = fr_productBeschrijving = fr_URL_PDF = fr_URL_LEV = ""
+            if nl_el:
+                nl_productTitel = nl_el.find("productTitel").text
+                nl_productInfo = nl_el.find("productInfo").text
+                nl_productBeschrijving = nl_el.find("productBeschrijving").text
+                nl_URL_PDF = nl_el.find("URL_PDF").text
+                nl_URL_LEV = nl_el.find("URL_LEV").text
+            if fr_el:
+                fr_productTitel = fr_el.find("productTitel").text
+                fr_productInfo = fr_el.find("productInfo").text
+                fr_productBeschrijving = fr_el.find("productBeschrijving").text
+                fr_URL_PDF = fr_el.find("URL_PDF").text
+                fr_URL_LEV = fr_el.find("URL_LEV").text
+            ean = default_el.find("EAN")
+            update_trigger_text = default_el.find("update_trigger").text
+            merk_origineel = default_el.find("merk_origineel").text
 
             if not ean.text:
                 empty_ean_count += 1
                 continue
 
             vals = {
-                "idArtikel": product_el.find("idArtikel").text,
-                "artikelnummer": product_el.find("artikelnummer").text,
-                "typenummer": product_el.find("typenummer").text,
+                "idArtikel": default_el.find("idArtikel").text,
+                "artikelnummer": default_el.find("artikelnummer").text,
+                "typenummer": default_el.find("typenummer").text,
                 "ean": ean.text,
-                "merk": product_el.find("merk").text,
+                "merk": default_el.find("merk").text,
                 "merk_origineel": merk_origineel,
-                "productTitel": product_el.find("productTitel").text,
-                "productInfo": product_el.find("productInfo").text,
-                "productBeschrijving": product_el.find("productBeschrijving").text,
-                "idCat_1": product_el.find("idCat_1").text,
-                "idCat_2": product_el.find("idCat_2").text,
-                "idCat_3": product_el.find("idCat_3").text,
-                "cat_1": product_el.find("cat_1").text,
-                "cat_2": product_el.find("cat_2").text,
-                "cat_3": product_el.find("cat_3").text,
-                "URL_afbeelding_1": product_el.find("URL_afbeelding_1").text,
-                "URL_afbeelding_2": product_el.find("URL_afbeelding_2").text,
-                "URL_afbeelding_3": product_el.find("URL_afbeelding_3").text,
-                "URL_afbeelding_4": product_el.find("URL_afbeelding_4").text,
-                "URL_afbeelding_5": product_el.find("URL_afbeelding_5").text,
-                "URL_PDF_N": product_el.find("URL_PDF_N").text,
-                "URL_LEV_N": product_el.find("URL_LEV_N").text,
-                "accessoires": product_el.find("accessoires").text,
-                "status": product_el.find("status").text,
+                "productTitel": nl_productTitel or fr_productTitel,
+                "productInfo": nl_productInfo or fr_productInfo,
+                "productBeschrijving": nl_productBeschrijving or fr_productBeschrijving,
+                "idCat_1": default_el.find("idCat_1").text,
+                "idCat_2": default_el.find("idCat_2").text,
+                "idCat_3": default_el.find("idCat_3").text,
+                "idAtt_01": default_el.find("idAtt_01").text,
+                "idAtt_02": default_el.find("idAtt_02").text,
+                "idAtt_03": default_el.find("idAtt_03").text,
+                "idAtt_04": default_el.find("idAtt_04").text,
+                "idAtt_05": default_el.find("idAtt_05").text,
+                "idAtt_06": default_el.find("idAtt_06").text,
+                "idAtt_07": default_el.find("idAtt_07").text,
+                "idAtt_08": default_el.find("idAtt_08").text,
+                "idAtt_09": default_el.find("idAtt_09").text,
+                "idAtt_10": default_el.find("idAtt_10").text,
+                "idAtt_11": default_el.find("idAtt_11").text,
+                "idAtt_12": default_el.find("idAtt_12").text,
+                "idAtt_13": default_el.find("idAtt_13").text,
+                "idAtt_14": default_el.find("idAtt_14").text,
+                "idAtt_15": default_el.find("idAtt_15").text,
+                "URL_afbeelding_1": default_el.find("URL_afbeelding_1").text,
+                "URL_afbeelding_2": default_el.find("URL_afbeelding_2").text,
+                "URL_afbeelding_3": default_el.find("URL_afbeelding_3").text,
+                "URL_afbeelding_4": default_el.find("URL_afbeelding_4").text,
+                "URL_afbeelding_5": default_el.find("URL_afbeelding_5").text,
+                "URL_PDF": nl_URL_PDF or fr_URL_PDF,
+                "URL_LEV": nl_URL_LEV or fr_URL_LEV,
+                "accessoires": default_el.find("accessoires").text,
+                "status": default_el.find("status").text,
                 "product_is_active": True,
             }
 
@@ -155,6 +204,8 @@ class ImportProductTable(models.Model):
                 )
             brand.brand_is_active = True
             vals["brand_id"] = brand.id
+            if brand.brand_selected_for_import:
+                vals["product_selected_for_import"] = True
 
             if update_trigger_text:
                 update_trigger = try_parsing_date(update_trigger_text)
@@ -175,18 +226,18 @@ class ImportProductTable(models.Model):
                     )
 
             rrp = (
-                product_el.find("RRP").text
-                and product_el.find("RRP").text.replace(",", ".")
+                default_el.find("RRP").text
+                and default_el.find("RRP").text.replace(",", ".")
                 or "0.0"
             )
             taksen = (
-                product_el.find("taksen").text
-                and product_el.find("taksen").text.replace(",", ".")
+                default_el.find("taksen").text
+                and default_el.find("taksen").text.replace(",", ".")
                 or "0.0"
             )
             vkp = (
-                product_el.find("VKP").text
-                and product_el.find("VKP").text.replace(",", ".")
+                default_el.find("VKP").text
+                and default_el.find("VKP").text.replace(",", ".")
                 or "0.0"
             )
 
@@ -210,6 +261,61 @@ class ImportProductTable(models.Model):
                 product.write(vals)
             else:
                 product = self.create(vals)
+
+            if "nl_BE" in active_langs:
+                if nl_productTitel:
+                    product.with_context(lang="nl_BE").productTitel = nl_productTitel
+                if nl_productInfo:
+                    try:
+                        translation_obj.create(
+                            {
+                                "src": vals["productInfo"],
+                                "value": nl_productInfo,
+                                "type": "model_terms",
+                                "name": "import.product.table,productInfo",
+                                "res_id": product.id,
+                                "lang": "nl_BE",
+                                "state": "translated",
+                            }
+                        )
+                    except psycopg2.DatabaseError as e:
+                        self.env.cr.rollback()
+                        pass
+                if nl_productBeschrijving:
+                    product.with_context(
+                        lang="nl_BE"
+                    ).productBeschrijving = nl_productBeschrijving
+                if nl_URL_PDF:
+                    product.with_context(lang="nl_BE").URL_PDF = nl_URL_PDF
+                if nl_URL_LEV:
+                    product.with_context(lang="nl_BE").URL_LEV = nl_URL_LEV
+            if "fr_BE" in active_langs:
+                if fr_productTitel:
+                    product.with_context(lang="fr_BE").productTitel = fr_productTitel
+                if fr_productInfo:
+                    try:
+                        translation_obj.create(
+                            {
+                                "src": vals["productInfo"],
+                                "value": fr_productInfo,
+                                "type": "model_terms",
+                                "name": "import.product.table,productInfo",
+                                "res_id": product.id,
+                                "lang": "fr_BE",
+                                "state": "translated",
+                            }
+                        )
+                    except psycopg2.DatabaseError as e:
+                        self.env.cr.rollback()
+                        pass
+                if fr_productBeschrijving:
+                    product.with_context(
+                        lang="fr_BE"
+                    ).productBeschrijving = fr_productBeschrijving
+                if fr_URL_PDF:
+                    product.with_context(lang="fr_BE").URL_PDF = fr_URL_PDF
+                if fr_URL_LEV:
+                    product.with_context(lang="fr_BE").URL_LEV = fr_URL_LEV
 
             processed_products.append(product.id)
 
@@ -246,35 +352,38 @@ class ImportProductTable(models.Model):
                 processed_products,
             )
 
-        res = {
-            "result": _("Products successfully imported/edited in Odoo."),
-            "res_model": "import.product.table",
-        }
+        result = _("Products successfully imported/edited in Odoo.")
         if not processed_products:
-            res["result"] = _(
+            result = _(
                 "Products were not imported/edited. "
                 "Please check source file location settings."
             )
         if errors:
-            res["result"] = _(
+            result = _(
                 "Some products successfully imported/edited in Odoo.\n"
                 "Some have failed:\n{error}"
             ).format(
                 error=get_errors_string(errors),
             )
-        print(res["result"])
-        return res
+        self.env["mail.channel"].post_system_message(result)
+        return True
 
     def process_create_edit_products(self, processed_products, errors):
+        active_langs = (
+            self.env["res.lang"].search([("active", "=", True)]).mapped("code")
+        )
+        translation_obj = self.env["ir.translation"]
         product_tmpl_obj = self.env["product.template"]
         product_image_obj = self.env["product.image"]
         product_public_category_obj = self.env["product.public.category"]
+
         company = self.env.company
         product_name_field = company.product_name_field_id
         import_product_mappings = company.import_product_mapping_ids
         import_extra_image_mappings = company.import_extra_image_mapping_ids
         import_eshop_categories_mappings = company.import_eshop_category_mapping_ids
 
+        # searching for products to import
         import_products_to_process = self.search(
             [
                 ("product_selected_for_import", "=", True),
@@ -284,16 +393,24 @@ class ImportProductTable(models.Model):
         for import_product in import_products_to_process:
             ean = import_product.ean
             try:
+                # basic vals
                 vals = {
-                    "name": getattr(import_product, product_name_field.name),
+                    "name": getattr(
+                        import_product.with_context(lang="nl_BE"),
+                        product_name_field.name,
+                    ),
                     "ean": ean,
+                    "type": "product",
                     "rc_last_update_date": import_product.update_trigger,
                 }
+                # getting vals by mapping
                 for mapping in import_product_mappings:
                     vals[mapping.product_template_field_id.name] = getattr(
-                        import_product, mapping.import_product_table_field_id.name
+                        import_product.with_context(lang="nl_BE"),
+                        mapping.import_product_table_field_id.name,
                     )
 
+                # parsing images from url
                 images = []
                 for image_mapping in import_extra_image_mappings:
                     image_url = getattr(
@@ -309,6 +426,7 @@ class ImportProductTable(models.Model):
                 if images:
                     vals["product_template_image_ids"] = images
 
+                # searching for categories to assign
                 categories = []
                 for category_mapping in import_eshop_categories_mappings:
                     category_id = getattr(
@@ -323,6 +441,68 @@ class ImportProductTable(models.Model):
                             categories.append((4, category.id))
                 if categories:
                     vals["public_categ_ids"] = categories
+
+                # searching for attribute values to assign
+                attribute_value_rc_ids = []
+                for number in range(15):
+                    number += 1
+                    attribute_value_rc_id = getattr(
+                        import_product,
+                        "idAtt_{number}".format(number="{:02d}".format(number)),
+                    )
+                    if attribute_value_rc_id:
+                        attribute_value_rc_ids.append(attribute_value_rc_id)
+
+                if attribute_value_rc_ids:
+                    attribute_values = self.env["product.attribute.value"].search(
+                        [("rc_attribute_value_id", "in", attribute_value_rc_ids)]
+                    )
+
+                    # error is raised when some of attribute values are not found in
+                    # system
+                    not_found_attribute_value_ids = set(
+                        [str(v) for v in attribute_value_rc_ids]
+                    ) - set(attribute_values.mapped("rc_attribute_value_id"))
+                    if not_found_attribute_value_ids:
+                        errors.append(
+                            get_exception_error_string(
+                                "",
+                                _(
+                                    "While assigning attribute values for "
+                                    "product with EAN code: {ean}, this attribute "
+                                    "value IDS was not found in "
+                                    "system: {attribute_value_ids}."
+                                ).format(
+                                    ean=ean,
+                                    attribute_value_ids=", ".join(
+                                        not_found_attribute_value_ids
+                                    ),
+                                ),
+                                source="product",
+                            )
+                        )
+
+                    attribute_line_ids = []
+                    for attribute in attribute_values.mapped("attribute_id"):
+                        attribute_line_ids.append(
+                            (
+                                0,
+                                0,
+                                {
+                                    "attribute_id": attribute.id,
+                                    "value_ids": [
+                                        (
+                                            6,
+                                            0,
+                                            attribute_values.filtered(
+                                                lambda v: v.attribute_id == attribute
+                                            ).ids,
+                                        )
+                                    ],
+                                },
+                            )
+                        )
+                    vals["attribute_line_ids"] = attribute_line_ids
 
                 product_template = product_tmpl_obj.search(
                     [("ean", "=", import_product.ean)], limit=1
@@ -343,6 +523,60 @@ class ImportProductTable(models.Model):
                     product_template._onchange_image_url()
                     if not product_template.is_published:
                         product_template.website_publish_button()
+
+                    # translation of fields which needs to be translated
+                    for mapping in import_product_mappings:
+                        if (
+                            mapping.import_product_table_field_id.name
+                            in FIELDS_TO_TRANSLATE
+                        ):
+                            for lang in active_langs:
+                                if (
+                                    mapping.import_product_table_field_id.ttype
+                                    == "html"
+                                ):
+                                    translation = translation_obj.search(
+                                        [
+                                            (
+                                                "name",
+                                                "=",
+                                                "import.product.table,{}".format(
+                                                    mapping.import_product_table_field_id.name
+                                                ),
+                                            ),
+                                            ("res_id", "=", import_product.id),
+                                            ("lang", "=", lang),
+                                            ("state", "=", "translated"),
+                                        ],
+                                        limit=1,
+                                    )
+                                    if translation:
+                                        try:
+                                            translation.copy(
+                                                {
+                                                    "name": "product.template,{}".format(
+                                                        mapping.product_template_field_id.name
+                                                    ),
+                                                    "res_id": product_template.id,
+                                                }
+                                            )
+                                        except psycopg2.DatabaseError as e:
+                                            self.env.cr.rollback()
+                                            pass
+                                else:
+                                    product_template.with_context(lang=lang).write(
+                                        {
+                                            mapping.product_template_field_id.name: getattr(
+                                                import_product.with_context(lang=lang),
+                                                mapping.import_product_table_field_id.name,
+                                            )
+                                        }
+                                    )
+                    for lang in active_langs:
+                        product_template.with_context(lang=lang).name = getattr(
+                            import_product.with_context(lang=lang),
+                            product_name_field.name,
+                        )
 
                 processed_products.append(product_template.id)
                 self.env.cr.commit()
@@ -383,23 +617,20 @@ class ImportProductTable(models.Model):
         except Exception as e:
             errors.append(get_exception_error_string("", e, source="product_template"))
 
-        res = {
-            "result": _(
-                "Products successfully created/edited and published in Odoo web shop."
-            ),
-            "res_model": "import.product.table",
-        }
+        result = _(
+            "Products successfully created/edited and published in Odoo web shop."
+        )
         if not processed_products:
-            res["result"] = _(
+            result = _(
                 "Products were not created/edited. Please check mapping settings."
             )
         if errors:
-            res["result"] = _(
+            result = _(
                 "Some products successfully created/edited "
                 "and published in Odoo web shop.\n"
                 "Some have failed:\n{error}"
             ).format(
                 error=get_errors_string(errors),
             )
-        print(res["result"])
-        return res
+        self.env["mail.channel"].post_system_message(result)
+        return True
