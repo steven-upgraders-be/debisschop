@@ -108,6 +108,7 @@ class ProductAttribute(models.Model):
                 ],
                 limit=1,
             )
+            self.env.cr.commit()
             try:
                 if attribute_value:
                     attribute_value.write(attribute_value_vals)
