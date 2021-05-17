@@ -266,6 +266,16 @@ class ImportProductTable(models.Model):
                 if nl_productTitel:
                     product.with_context(lang="nl_BE").productTitel = nl_productTitel
                 if nl_productInfo:
+                    # removing existing translation of html field
+                    translation_obj.search(
+                        [
+                            ("name", "=", "import.product.table,productInfo"),
+                            ("res_id", "=", product.id),
+                            ("lang", "=", "nl_BE"),
+                            ("state", "=", "translated"),
+                        ]
+                    ).unlink()
+                    self.env.cr.commit()
                     try:
                         translation_obj.create(
                             {
@@ -278,6 +288,7 @@ class ImportProductTable(models.Model):
                                 "state": "translated",
                             }
                         )
+                        self.env.cr.commit()
                     except psycopg2.DatabaseError as e:
                         self.env.cr.rollback()
                         pass
@@ -293,6 +304,16 @@ class ImportProductTable(models.Model):
                 if fr_productTitel:
                     product.with_context(lang="fr_BE").productTitel = fr_productTitel
                 if fr_productInfo:
+                    # removing existing translation of html field
+                    translation_obj.search(
+                        [
+                            ("name", "=", "import.product.table,productInfo"),
+                            ("res_id", "=", product.id),
+                            ("lang", "=", "fr_BE"),
+                            ("state", "=", "translated"),
+                        ]
+                    ).unlink()
+                    self.env.cr.commit()
                     try:
                         translation_obj.create(
                             {
@@ -305,6 +326,7 @@ class ImportProductTable(models.Model):
                                 "state": "translated",
                             }
                         )
+                        self.env.cr.commit()
                     except psycopg2.DatabaseError as e:
                         self.env.cr.rollback()
                         pass
@@ -392,6 +414,7 @@ class ImportProductTable(models.Model):
         )
         for import_product in import_products_to_process:
             ean = import_product.ean
+            self.env.cr.commit()
             try:
                 # basic vals
                 vals = {
@@ -453,6 +476,7 @@ class ImportProductTable(models.Model):
                     if attribute_value_rc_id:
                         attribute_value_rc_ids.append(attribute_value_rc_id)
 
+                attribute_values = self.env["product.attribute.value"]
                 if attribute_value_rc_ids:
                     attribute_values = self.env["product.attribute.value"].search(
                         [("rc_attribute_value_id", "in", attribute_value_rc_ids)]
@@ -482,28 +506,6 @@ class ImportProductTable(models.Model):
                             )
                         )
 
-                    attribute_line_ids = []
-                    for attribute in attribute_values.mapped("attribute_id"):
-                        attribute_line_ids.append(
-                            (
-                                0,
-                                0,
-                                {
-                                    "attribute_id": attribute.id,
-                                    "value_ids": [
-                                        (
-                                            6,
-                                            0,
-                                            attribute_values.filtered(
-                                                lambda v: v.attribute_id == attribute
-                                            ).ids,
-                                        )
-                                    ],
-                                },
-                            )
-                        )
-                    vals["attribute_line_ids"] = attribute_line_ids
-
                 product_template = product_tmpl_obj.search(
                     [("ean", "=", import_product.ean)], limit=1
                 )
@@ -520,6 +522,30 @@ class ImportProductTable(models.Model):
                     product_template = product_tmpl_obj.create(vals)
                     action_done = True
                 if action_done:
+                    if attribute_values:
+                        attribute_line_ids = []
+                        product_template.attribute_line_ids.unlink()
+                        for attribute in attribute_values.mapped("attribute_id"):
+                            attribute_line_ids.append(
+                                (
+                                    0,
+                                    0,
+                                    {
+                                        "attribute_id": attribute.id,
+                                        "value_ids": [
+                                            (
+                                                6,
+                                                0,
+                                                attribute_values.filtered(
+                                                    lambda v: v.attribute_id == attribute
+                                                ).ids,
+                                            )
+                                        ],
+                                    },
+                                )
+                            )
+                        product_template.attribute_line_ids = attribute_line_ids
+
                     product_template._onchange_image_url()
                     if not product_template.is_published:
                         product_template.website_publish_button()
@@ -535,6 +561,22 @@ class ImportProductTable(models.Model):
                                     mapping.import_product_table_field_id.ttype
                                     == "html"
                                 ):
+                                    # removing existing translation of html field
+                                    translation_obj.search(
+                                        [
+                                            (
+                                                "name",
+                                                "=",
+                                                "product.template,{}".format(
+                                                    mapping.product_template_field_id.name
+                                                ),
+                                            ),
+                                            ("res_id", "=", product_template.id),
+                                            ("lang", "=", lang),
+                                        ]
+                                    ).unlink()
+                                    self.env.cr.commit()
+
                                     translation = translation_obj.search(
                                         [
                                             (
@@ -551,6 +593,7 @@ class ImportProductTable(models.Model):
                                         limit=1,
                                     )
                                     if translation:
+                                        self.env.cr.commit()
                                         try:
                                             translation.copy(
                                                 {
@@ -558,8 +601,10 @@ class ImportProductTable(models.Model):
                                                         mapping.product_template_field_id.name
                                                     ),
                                                     "res_id": product_template.id,
+                                                    "state": "translated"
                                                 }
                                             )
+                                            self.env.cr.commit()
                                         except psycopg2.DatabaseError as e:
                                             self.env.cr.rollback()
                                             pass

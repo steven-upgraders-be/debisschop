@@ -9,7 +9,7 @@
     "author": "Upgraders",
     "website": "https://www.upgraders.be",
     "category": "Specific Industry Applications",
-    "version": "0.3",
+    "version": "0.4",
     "depends": [
         "product",
         "website_sale",
