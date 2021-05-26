@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.rc_stock_import</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="95"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="RC Stock Import" string="RC Stock Import" data-key="rc_stock_import" groups="rc_product_connect.group_rc_manager">
+                    <h2>FTP Settings</h2>
+                    <div class="row mt16" style="padding-left: 60px;">
+                        <div class="col-12 col-lg-9 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label class="col-lg-3 o_light_label" string="FTP Server" for="ftp_server"/>
+                                        <field name="ftp_server"/>
+                                    </div>
+                                    <div class="row mt16">
+                                        <label class="col-lg-3 o_light_label" string="FTP Username" for="ftp_username"/>
+                                        <field name="ftp_username"/>
+                                    </div>
+                                    <div class="row mt16">
+                                        <label class="col-lg-3 o_light_label" string="FTP Password" for="ftp_password"/>
+                                        <field name="ftp_password" password="True"/>
+                                    </div>
+                                    <div class="row mt16">
+                                        <label class="col-lg-3 o_light_label" string="Filename" for="filename"/>
+                                        <field name="filename"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
